@@ -7,6 +7,7 @@ import { authRoutes } from './routes/auth.routes.js';
 import { fileRoutes } from './routes/files.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
+import { hrRoutes } from './routes/hr.routes.js';
 
 const app = Fastify({
   logger:
@@ -45,6 +46,7 @@ app.register(authRoutes, { prefix: '/api/auth' });
 app.register(fileRoutes, { prefix: '/api/files' });
 app.register(dashboardRoutes, { prefix: '/api/dashboards' });
 app.register(aiRoutes, { prefix: '/api/ai' });
+app.register(hrRoutes, { prefix: '/api/hr' });
 
 // ─── Start Server ──────────────────────────────────────────────────────────
 
