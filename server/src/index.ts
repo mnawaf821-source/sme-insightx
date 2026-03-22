@@ -5,6 +5,7 @@ import { env } from './config.js';
 import { errorHandler } from './middleware/error.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { fileRoutes } from './routes/files.routes.js';
+import { dashboardRoutes } from './routes/dashboard.routes.js';
 
 const app = Fastify({
   logger:
@@ -41,6 +42,7 @@ app.get('/health', async () => ({
 
 app.register(authRoutes, { prefix: '/api/auth' });
 app.register(fileRoutes, { prefix: '/api/files' });
+app.register(dashboardRoutes, { prefix: '/api/dashboards' });
 
 // ─── Start Server ──────────────────────────────────────────────────────────
 
