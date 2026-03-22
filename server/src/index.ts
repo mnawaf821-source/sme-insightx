@@ -4,6 +4,7 @@ import helmet from '@fastify/helmet';
 import { env } from './config.js';
 import { errorHandler } from './middleware/error.js';
 import { authRoutes } from './routes/auth.routes.js';
+import { fileRoutes } from './routes/files.routes.js';
 
 const app = Fastify({
   logger:
@@ -39,6 +40,7 @@ app.get('/health', async () => ({
 // ─── Routes ─────────────────────────────────────────────────────────────────
 
 app.register(authRoutes, { prefix: '/api/auth' });
+app.register(fileRoutes, { prefix: '/api/files' });
 
 // ─── Start Server ──────────────────────────────────────────────────────────
 

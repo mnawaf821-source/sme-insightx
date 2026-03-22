@@ -36,6 +36,28 @@ export type CreateWidgetInput = z.infer<typeof createWidgetSchema>;
 
 export type UploadFileInput = z.infer<typeof uploadFileSchema>;
 
+export interface FileResponse {
+  id: string;
+  organizationId: string;
+  uploadedById: string | null;
+  name: string;
+  originalName: string;
+  type: FileType;
+  size: number;
+  url: string;
+  createdAt: string;
+}
+
+export interface ParsedDataResponse {
+  id: string;
+  fileId: string;
+  organizationId: string;
+  columns: Array<{ name: string; type: string }>;
+  rowCount: number;
+  sampleData: Record<string, unknown>[];
+  createdAt: string;
+}
+
 // ─── HR Types ───────────────────────────────────────────────────────────────
 
 export type CreateJobPostingInput = z.infer<typeof createJobPostingSchema>;
