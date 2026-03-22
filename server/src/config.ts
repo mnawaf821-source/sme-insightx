@@ -9,6 +9,9 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  OPENAI_API_KEY: z.string().default(''),
+  OPENAI_BASE_URL: z.string().default('https://api.openai.com/v1'),
+  AI_MODEL: z.string().default('gpt-4o-mini'),
 });
 
 const parsed = envSchema.safeParse(process.env);

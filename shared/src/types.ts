@@ -16,6 +16,11 @@ import type {
   createAiInsightSchema,
   sendMessageSchema,
   createConversationSchema,
+  analyzeFileSchema,
+  naturalLanguageQuerySchema,
+  generateInsightsSchema,
+  chatMessageSchema,
+  chartSuggestSchema,
 } from './schemas.js';
 
 // ─── Auth Types ─────────────────────────────────────────────────────────────
@@ -68,6 +73,68 @@ export type UpdateCandidateInput = z.infer<typeof updateCandidateSchema>;
 // ─── AI Insight Types ───────────────────────────────────────────────────────
 
 export type CreateAiInsightInput = z.infer<typeof createAiInsightSchema>;
+
+// ─── AI Analysis Types ──────────────────────────────────────────────────────
+
+export type AnalyzeFileInput = z.infer<typeof analyzeFileSchema>;
+export type NaturalLanguageQueryInput = z.infer<typeof naturalLanguageQuerySchema>;
+export type GenerateInsightsInput = z.infer<typeof generateInsightsSchema>;
+export type ChatMessageInput = z.infer<typeof chatMessageSchema>;
+export type ChartSuggestInput = z.infer<typeof chartSuggestSchema>;
+
+export interface AiInsight {
+  id: string;
+  organizationId: string;
+  type: 'trend' | 'anomaly' | 'recommendation' | 'summary';
+  source: string;
+  title: string;
+  content: string;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface AiAnalysisResult {
+  summary: string;
+  patterns: string[];
+  suggestedCharts: Array<{
+    type: 'line' | 'bar' | 'pie' | 'kpi';
+    title: string;
+    xColumn?: string;
+    yColumn?: string;
+    reason: string;
+  }>;
+  keyMetrics: Array<{
+    name: string;
+    value: number | string;
+    description: string;
+  }>;
+}
+
+export interface AiQueryResult {
+  chartType: 'line' | 'bar' | 'pie' | 'area' | 'table';
+  xColumn: string;
+  yColumn: string;
+  title: string;
+  reasoning: string;
+  filteredRows?: Record<string, unknown>[];
+}
+
+export interface Conversation {
+  id: string;
+  organizationId: string;
+  userId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
 
 // ─── Conversation Types ─────────────────────────────────────────────────────
 

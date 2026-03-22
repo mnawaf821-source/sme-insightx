@@ -24,7 +24,14 @@ export const API_ROUTES = {
   CANDIDATE_BY_ID: (id: string) => `${API_BASE}/hr/candidates/${id}`,
 
   // AI
+  AI_ANALYZE: `${API_BASE}/ai/analyze`,
+  AI_QUERY: `${API_BASE}/ai/query`,
   AI_INSIGHTS: `${API_BASE}/ai/insights`,
+  AI_INSIGHTS_GENERATE: `${API_BASE}/ai/insights/generate`,
+  AI_CHAT: `${API_BASE}/ai/chat`,
+  AI_CONVERSATIONS: `${API_BASE}/ai/conversations`,
+  AI_CONVERSATION_BY_ID: (id: string) => `${API_BASE}/ai/conversations/${id}`,
+  AI_CHART_SUGGEST: `${API_BASE}/ai/chart-suggest`,
 
   // Conversations
   CONVERSATIONS: `${API_BASE}/conversations`,
@@ -73,6 +80,8 @@ export const QUERY_KEYS = {
   JOB_POSTINGS: ['hr', 'job-postings'],
   CANDIDATES: ['hr', 'candidates'],
   AI_INSIGHTS: ['ai', 'insights'],
+  AI_CONVERSATIONS: ['ai', 'conversations'],
+  AI_CONVERSATION: (id: string) => ['ai', 'conversations', id],
   CONVERSATIONS: ['conversations'],
   CONVERSATION_MESSAGES: (id: string) => ['conversations', id, 'messages'],
 } as const;

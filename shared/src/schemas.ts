@@ -126,3 +126,27 @@ export const sendMessageSchema = z.object({
 export const createConversationSchema = z.object({
   title: z.string().min(1).max(200),
 });
+
+// ─── AI Schemas ────────────────────────────────────────────────────────────
+
+export const analyzeFileSchema = z.object({
+  fileId: z.string().uuid(),
+});
+
+export const naturalLanguageQuerySchema = z.object({
+  query: z.string().min(1).max(2000),
+  fileIds: z.array(z.string().uuid()).optional(),
+});
+
+export const generateInsightsSchema = z.object({
+  fileId: z.string().uuid(),
+});
+
+export const chatMessageSchema = z.object({
+  conversationId: z.string().uuid().optional(),
+  content: z.string().min(1).max(10000),
+});
+
+export const chartSuggestSchema = z.object({
+  fileId: z.string().uuid(),
+});
