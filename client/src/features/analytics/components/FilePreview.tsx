@@ -151,9 +151,20 @@ export function FilePreview({ file, onClose }: FilePreviewProps) {
   const { data: parsedData, isLoading, error } = useFileData(file.id);
   const parseFile = useParseFile();
   const [isParsing, setIsParsing] = useState(false);
+  const [hasAutoParsed, setHasAutoParsed] = useState(false);
+
+  // Auto-trigger parse when no parsed data exists (avoids confusing 404 error)
+  const shouldAutoParse =
+    !isLoading && !parsedData && error && !hasAutoParsed && !parseFile.isPending;
+
+  if (shouldAutoParse) {
+    setHasAutoParsed(true);
+    parseFile.mutate(file.id);
+  }
 
   const handleParse = async () => {
     setIsParsing(true);
+    setHasAutoParsed(true);
     try {
       await parseFile.mutateAsync(file.id);
     } finally {
@@ -213,10 +224,10 @@ export function FilePreview({ file, onClose }: FilePreviewProps) {
                 />
               ))}
             </div>
-          ) : error ? (
+          ) : error && !parseFile.isPending ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                {(error as Error).message || 'No parsed data available'}
+                Could not load parsed data
               </p>
               <Button
                 variant="outline"

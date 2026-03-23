@@ -14,6 +14,16 @@ interface BarChartProps {
   yKey: string;
 }
 
+function truncateLabel(value: string, maxLen = 12): string {
+  if (value.length <= maxLen) return value;
+  return value.slice(0, maxLen - 1) + '…';
+}
+
+function formatAxisTick(value: string): string {
+  // Truncate long labels to prevent overlap
+  return truncateLabel(value, 12);
+}
+
 export function BarChart({ data, xKey, yKey }: BarChartProps) {
   const chartData = data.map((row) => ({
     [xKey]: String(row[xKey] ?? ''),
@@ -26,11 +36,16 @@ export function BarChart({ data, xKey, yKey }: BarChartProps) {
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
           dataKey={xKey}
-          tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
           axisLine={{ stroke: 'hsl(var(--border))' }}
+          tickFormatter={formatAxisTick}
+          interval={chartData.length > 15 ? 'preserveStartEnd' : 0}
+          angle={chartData.length > 8 ? -35 : 0}
+          textAnchor={chartData.length > 8 ? 'end' : 'middle'}
+          height={chartData.length > 8 ? 50 : 30}
         />
         <YAxis
-          tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
           axisLine={{ stroke: 'hsl(var(--border))' }}
         />
         <Tooltip
@@ -40,6 +55,8 @@ export function BarChart({ data, xKey, yKey }: BarChartProps) {
             borderRadius: '8px',
             fontSize: '12px',
           }}
+          formatter={(value: number) => [value.toLocaleString(), yKey]}
+          labelFormatter={(label: string) => `${xKey}: ${label}`}
         />
         <Bar
           dataKey={yKey}

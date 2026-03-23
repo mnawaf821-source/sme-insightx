@@ -69,7 +69,7 @@ export const aiService = {
     fileName: string,
   ): Promise<Insight[]> {
     const sample = rows.slice(0, 50);
-    const prompt = `You are a data analyst. Analyze this dataset and provide 3-5 insights.
+    const prompt = `You are a business analyst speaking to a non-technical business owner. Analyze this dataset and provide 3-5 insights in plain, simple language — avoid jargon, SQL terms, column names, or technical concepts.
 
 File: ${fileName}
 Columns: ${JSON.stringify(columns)}
@@ -80,13 +80,18 @@ For each insight, respond in this exact JSON format (array of objects):
 [
   {
     "type": "trend" | "anomaly" | "recommendation" | "summary",
-    "title": "Short title",
-    "content": "Detailed insight explanation",
+    "title": "Short, clear headline (e.g. 'Sales are growing steadily')",
+    "content": "2-3 sentence explanation in everyday language. Focus on what the finding means for their business, not how you found it. Use examples from the data when possible. Avoid phrases like 'the data shows' or 'based on analysis' — just state the finding directly.",
     "confidence": 0.0-1.0
   }
 ]
 
-Focus on: trends, anomalies, outliers, data quality issues, and actionable recommendations.
+Rules:
+- Write like you're explaining to a friend, not writing a report
+- Use concrete numbers and comparisons (e.g. "Revenue went up 23% from January to March")
+- For recommendations, suggest specific actions they can take
+- Avoid: "column", "row", "dataset", "record", "null", "NaN", technical abbreviations
+- Focus on business impact: money, growth, risk, opportunity
 Respond ONLY with the JSON array, no other text.`;
 
     const response = await callAI([{ role: 'user', content: prompt }]);

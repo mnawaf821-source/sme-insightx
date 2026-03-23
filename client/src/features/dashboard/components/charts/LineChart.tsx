@@ -14,6 +14,11 @@ interface LineChartProps {
   yKey: string;
 }
 
+function formatAxisTick(value: string): string {
+  if (value.length <= 12) return value;
+  return value.slice(0, 11) + '…';
+}
+
 export function LineChart({ data, xKey, yKey }: LineChartProps) {
   const chartData = data.map((row) => ({
     [xKey]: String(row[xKey] ?? ''),
@@ -26,11 +31,16 @@ export function LineChart({ data, xKey, yKey }: LineChartProps) {
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
           dataKey={xKey}
-          tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
           axisLine={{ stroke: 'hsl(var(--border))' }}
+          tickFormatter={formatAxisTick}
+          interval={chartData.length > 15 ? 'preserveStartEnd' : 0}
+          angle={chartData.length > 8 ? -35 : 0}
+          textAnchor={chartData.length > 8 ? 'end' : 'middle'}
+          height={chartData.length > 8 ? 50 : 30}
         />
         <YAxis
-          tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+          tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
           axisLine={{ stroke: 'hsl(var(--border))' }}
         />
         <Tooltip
@@ -40,6 +50,8 @@ export function LineChart({ data, xKey, yKey }: LineChartProps) {
             borderRadius: '8px',
             fontSize: '12px',
           }}
+          formatter={(value: number) => [value.toLocaleString(), yKey]}
+          labelFormatter={(label: string) => `${xKey}: ${label}`}
         />
         <Line
           type="monotone"
