@@ -33,6 +33,13 @@ interface AddWidgetModalProps {
     position: { x: number; y: number; w: number; h: number };
   }) => void;
   onClose: () => void;
+  editWidget?: {
+    id: string;
+    type: 'chart' | 'table' | 'metric' | 'text';
+    title: string;
+    config: WidgetConfig;
+    position: { x: number; y: number; w: number; h: number };
+  };
 }
 
 const WIDGET_TYPES = [
@@ -113,13 +120,14 @@ function ColumnSelect({
   );
 }
 
-export function AddWidgetModal({ onAdd, onClose }: AddWidgetModalProps) {
-  const [selectedType, setSelectedType] = useState<string>('chart');
-  const [selectedChartType, setSelectedChartType] = useState<string>('bar');
-  const [selectedFileId, setSelectedFileId] = useState<string>('');
-  const [xColumn, setXColumn] = useState<string>('');
-  const [yColumn, setYColumn] = useState<string>('');
-  const [metricColumn, setMetricColumn] = useState<string>('');
+export function AddWidgetModal({ onAdd, onClose, editWidget }: AddWidgetModalProps) {
+  const isEditing = !!editWidget;
+  const [selectedType, setSelectedType] = useState<string>(editWidget?.type || 'chart');
+  const [selectedChartType, setSelectedChartType] = useState<string>(editWidget?.config?.chartType || 'bar');
+  const [selectedFileId, setSelectedFileId] = useState<string>(editWidget?.config?.fileId || '');
+  const [xColumn, setXColumn] = useState<string>(editWidget?.config?.xColumn || '');
+  const [yColumn, setYColumn] = useState<string>(editWidget?.config?.yColumn || '');
+  const [metricColumn, setMetricColumn] = useState<string>(editWidget?.config?.metricColumn || '');
   const { data: filesData } = useFiles();
   const { data: chartData, isLoading: columnsLoading } = useChartData(
     selectedFileId || undefined,
@@ -133,9 +141,11 @@ export function AddWidgetModal({ onAdd, onClose }: AddWidgetModalProps) {
   } = useForm<WidgetFormData>({
     resolver: zodResolver(widgetSchema),
     defaultValues: {
-      title: '',
-      type: 'chart',
-      chartType: 'bar',
+      title: editWidget?.title || '',
+      type: editWidget?.type || 'chart',
+      chartType: editWidget?.config?.chartType || 'bar',
+      text: editWidget?.config?.text || '',
+      metricAggregation: (editWidget?.config?.metricAggregation as any) || 'sum',
     },
   });
 
@@ -204,7 +214,7 @@ export function AddWidgetModal({ onAdd, onClose }: AddWidgetModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <Card className="mx-4 w-full max-w-lg">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Add Widget</CardTitle>
+          <CardTitle className="text-base">{isEditing ? 'Edit Widget' : 'Add Widget'}</CardTitle>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -403,7 +413,7 @@ export function AddWidgetModal({ onAdd, onClose }: AddWidgetModalProps) {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit">Add Widget</Button>
+              <Button type="submit">{isEditing ? 'Save Changes' : 'Add Widget'}</Button>
             </div>
           </form>
         </CardContent>

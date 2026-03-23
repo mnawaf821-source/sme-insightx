@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Button } from '../components/ui/button';
 import { DashboardGrid } from '../features/dashboard/components/DashboardGrid';
@@ -9,13 +9,23 @@ import {
   useCreateDashboard,
   useDeleteDashboard,
   useAddWidget,
+  useUpdateWidget,
   useDeleteWidget,
 } from '../features/dashboard/hooks/useDashboard';
-import type { WidgetConfig } from '../features/dashboard/api/dashboard.api';
+import type { WidgetConfig, Widget } from '../features/dashboard/api/dashboard.api';
+
+const DASHBOARD_STORAGE_KEY = 'sme-insightx:selected-dashboard';
 
 export function DashboardPage() {
-  const [selectedDashboardId, setSelectedDashboardId] = useState<string | null>(null);
+  const [selectedDashboardId, setSelectedDashboardId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(DASHBOARD_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  });
   const [showAddWidget, setShowAddWidget] = useState(false);
+  const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
 
   const { data: dashboards, isLoading: loadingList } = useDashboards();
   const { data: selectedDashboard, isLoading: loadingDashboard } = useDashboard(
@@ -24,7 +34,24 @@ export function DashboardPage() {
   const createDashboard = useCreateDashboard();
   const deleteDashboard = useDeleteDashboard();
   const addWidget = useAddWidget(selectedDashboardId || '');
+  const updateWidget = useUpdateWidget(selectedDashboardId || '');
   const deleteWidget = useDeleteWidget(selectedDashboardId || '');
+
+  // Persist dashboard selection
+  useEffect(() => {
+    if (selectedDashboardId) {
+      try {
+        localStorage.setItem(DASHBOARD_STORAGE_KEY, selectedDashboardId);
+      } catch {}
+    }
+  }, [selectedDashboardId]);
+
+  // Auto-select first dashboard if none selected and dashboards exist
+  useEffect(() => {
+    if (!loadingList && dashboards && dashboards.length > 0 && !selectedDashboardId) {
+      setSelectedDashboardId(dashboards[0].id);
+    }
+  }, [loadingList, dashboards, selectedDashboardId]);
 
   const handleCreateDashboard = async () => {
     const name = prompt('Dashboard name:');
@@ -43,9 +70,33 @@ export function DashboardPage() {
     setShowAddWidget(false);
   };
 
+  const handleEditWidget = (data: {
+    type: 'chart' | 'table' | 'metric' | 'text';
+    title: string;
+    config: WidgetConfig;
+    position: { x: number; y: number; w: number; h: number };
+  }) => {
+    if (!editingWidget) return;
+    updateWidget.mutate({
+      widgetId: editingWidget.id,
+      data: { title: data.title, config: data.config },
+    });
+    setEditingWidget(null);
+  };
+
   const handleDeleteWidget = (widgetId: string) => {
     if (confirm('Delete this widget?')) {
       deleteWidget.mutate(widgetId);
+    }
+  };
+
+  const handleReorderWidgets = (reordered: { id: string; position: { x: number; y: number; w: number; h: number } }[]) => {
+    // Update positions via API
+    for (const item of reordered) {
+      updateWidget.mutate({
+        widgetId: item.id,
+        data: { position: item.position },
+      });
     }
   };
 
@@ -54,6 +105,9 @@ export function DashboardPage() {
     if (confirm(`Delete "${selectedDashboard?.name}"?`)) {
       deleteDashboard.mutate(selectedDashboardId);
       setSelectedDashboardId(null);
+      try {
+        localStorage.removeItem(DASHBOARD_STORAGE_KEY);
+      } catch {}
     }
   };
 
@@ -143,7 +197,9 @@ export function DashboardPage() {
         <DashboardGrid
           widgets={selectedDashboard?.widgets ?? []}
           onAddWidget={() => setShowAddWidget(true)}
+          onEditWidget={(widget) => setEditingWidget(widget)}
           onDeleteWidget={handleDeleteWidget}
+          onReorderWidgets={handleReorderWidgets}
           isLoading={loadingDashboard}
         />
       ) : (
@@ -159,6 +215,15 @@ export function DashboardPage() {
         <AddWidgetModal
           onAdd={handleAddWidget}
           onClose={() => setShowAddWidget(false)}
+        />
+      )}
+
+      {/* Edit Widget Modal */}
+      {editingWidget && (
+        <AddWidgetModal
+          onAdd={handleEditWidget}
+          onClose={() => setEditingWidget(null)}
+          editWidget={editingWidget}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreHorizontal, Trash2, GripVertical } from 'lucide-react';
+import { MoreHorizontal, Trash2, GripVertical, Pencil } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { LineChart } from './charts/LineChart';
@@ -12,6 +12,8 @@ import type { Widget, ChartData } from '../api/dashboard.api';
 interface WidgetCardProps {
   widget: Widget;
   onDelete?: () => void;
+  onEdit?: () => void;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 function aggregateData(
@@ -128,14 +130,14 @@ function WidgetContent({ widget, data }: { widget: Widget; data: ChartData }) {
   );
 }
 
-export function WidgetCard({ widget, onDelete }: WidgetCardProps) {
+export function WidgetCard({ widget, onDelete, onEdit, dragHandleProps }: WidgetCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const { data, isLoading, error } = useChartData(widget.config.fileId);
 
   return (
     <Card className="flex h-full flex-col overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 py-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" {...dragHandleProps}>
           <GripVertical className="h-4 w-4 cursor-grab text-[hsl(var(--muted-foreground))]" />
           <CardTitle className="text-sm font-medium">{widget.title}</CardTitle>
         </div>
@@ -149,7 +151,19 @@ export function WidgetCard({ widget, onDelete }: WidgetCardProps) {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
           {showMenu && (
-            <div className="absolute right-0 top-8 z-10 w-32 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] py-1 shadow-md">
+            <div className="absolute right-0 top-8 z-10 w-36 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] py-1 shadow-md">
+              {onEdit && (
+                <button
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-[hsl(var(--muted))]"
+                  onClick={() => {
+                    onEdit();
+                    setShowMenu(false);
+                  }}
+                >
+                  <Pencil className="h-3 w-3" />
+                  Edit Widget
+                </button>
+              )}
               <button
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-[hsl(var(--muted))]"
                 onClick={() => {
