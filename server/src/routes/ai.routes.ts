@@ -17,18 +17,24 @@ export async function aiRoutes(app: FastifyInstance) {
       const orgId = request.user.organizationId;
 
       // Get parsed data
-      const data = await fileService.getParsedData(fileId, orgId);
+      let data;
+      try {
+        data = await fileService.getParsedData(fileId, orgId);
+      } catch {
+        // Auto-parse if not yet parsed
+        data = await fileService.parseFile(fileId, orgId);
+      }
       const file = await fileService.getFile(fileId, orgId);
 
       // Run AI analysis
-      const insights = await aiService.analyzeFile(
+      const result = await aiService.analyzeFile(
         data.columns as Array<{ name: string; type: string }>,
         data.sampleData as Record<string, unknown>[],
         file.originalName,
       );
 
       // Store insights in DB
-      for (const insight of insights) {
+      for (const insight of result.insights) {
         await db.insert(aiInsights).values({
           organizationId: orgId,
           type: insight.type,
@@ -39,7 +45,7 @@ export async function aiRoutes(app: FastifyInstance) {
         });
       }
 
-      return reply.send({ success: true, data: insights });
+      return reply.send({ success: true, data: result });
     } catch (err: any) {
       const status = err.message?.includes('not found') ? 404 : 500;
       return reply.status(status).send({ success: false, error: err.message });
@@ -58,7 +64,12 @@ export async function aiRoutes(app: FastifyInstance) {
         return reply.status(400).send({ success: false, error: 'question and fileId are required' });
       }
 
-      const data = await fileService.getParsedData(fileId, orgId);
+      let data;
+      try {
+        data = await fileService.getParsedData(fileId, orgId);
+      } catch {
+        data = await fileService.parseFile(fileId, orgId);
+      }
 
       const result = await aiService.queryData(
         question,
@@ -79,7 +90,12 @@ export async function aiRoutes(app: FastifyInstance) {
   }, async (request: any, reply) => {
     try {
       const orgId = request.user.organizationId;
-      const data = await fileService.getParsedData(request.params.fileId, orgId);
+      let data;
+      try {
+        data = await fileService.getParsedData(request.params.fileId, orgId);
+      } catch {
+        data = await fileService.parseFile(request.params.fileId, orgId);
+      }
 
       const suggestion = await aiService.suggestChart(
         data.columns as Array<{ name: string; type: string }>,
@@ -99,7 +115,12 @@ export async function aiRoutes(app: FastifyInstance) {
   }, async (request: any, reply) => {
     try {
       const orgId = request.user.organizationId;
-      const data = await fileService.getParsedData(request.params.fileId, orgId);
+      let data;
+      try {
+        data = await fileService.getParsedData(request.params.fileId, orgId);
+      } catch {
+        data = await fileService.parseFile(request.params.fileId, orgId);
+      }
       const file = await fileService.getFile(request.params.fileId, orgId);
 
       const summary = await aiService.summarize(

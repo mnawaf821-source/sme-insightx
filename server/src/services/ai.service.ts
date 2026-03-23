@@ -5,7 +5,7 @@ interface AIResponse {
   usage?: { promptTokens: number; completionTokens: number };
 }
 
-interface ChartSuggestion {
+export interface ChartSuggestion {
   chartType: 'line' | 'bar' | 'pie' | 'area' | 'table';
   xColumn: string;
   yColumn: string;
@@ -13,11 +13,42 @@ interface ChartSuggestion {
   reasoning: string;
 }
 
-interface Insight {
+export interface KeyMetric {
+  title: string;
+  value: string;
+  trend: 'up' | 'down' | 'neutral';
+  trendValue: string;
+  description: string;
+}
+
+export interface Insight {
   type: 'trend' | 'anomaly' | 'recommendation' | 'summary';
   title: string;
   content: string;
   confidence: number;
+}
+
+export interface Recommendation {
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  impact: string;
+  action: string;
+}
+
+export interface AnalysisChart {
+  type: 'bar' | 'line' | 'pie';
+  xColumn: string;
+  yColumn: string;
+  title: string;
+}
+
+export interface AnalysisResult {
+  summary: string;
+  keyMetrics: KeyMetric[];
+  insights: Insight[];
+  recommendations: Recommendation[];
+  charts: AnalysisChart[];
 }
 
 /**
@@ -41,7 +72,7 @@ async function callAI(
       model,
       messages,
       temperature: options?.temperature ?? 0.3,
-      max_tokens: options?.maxTokens ?? 2048,
+      max_tokens: options?.maxTokens ?? 4096,
     }),
   });
 
@@ -59,53 +90,117 @@ async function callAI(
   };
 }
 
+/**
+ * Parse AI JSON response, stripping markdown fences
+ */
+function parseAIJSON<T>(content: string): T | null {
+  try {
+    const cleaned = content.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    return JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
+}
+
 export const aiService = {
   /**
-   * Analyze a file's data and generate insights
+   * Full analysis — returns structured results with summary, metrics, insights,
+   * recommendations, and chart suggestions
    */
   async analyzeFile(
     columns: Array<{ name: string; type: string }>,
     rows: Record<string, unknown>[],
     fileName: string,
-  ): Promise<Insight[]> {
+  ): Promise<AnalysisResult> {
     const sample = rows.slice(0, 50);
-    const prompt = `You are a business analyst speaking to a non-technical business owner. Analyze this dataset and provide 3-5 insights in plain, simple language — avoid jargon, SQL terms, column names, or technical concepts.
+    const numericCols = columns.filter(c => c.type === 'number').map(c => c.name);
+    const stringCols = columns.filter(c => c.type === 'string').map(c => c.name);
+    const dateCols = columns.filter(c => c.type === 'date').map(c => c.name);
+
+    const prompt = `You are a business analyst speaking to a non-technical business owner. Analyze this dataset and provide a complete analysis.
 
 File: ${fileName}
+Rows: ${rows.length}
 Columns: ${JSON.stringify(columns)}
+Numeric columns: ${numericCols.join(', ')}
+Category columns: ${stringCols.join(', ')}
+Date columns: ${dateCols.join(', ')}
 Sample data (first ${sample.length} rows):
 ${JSON.stringify(sample, null, 2)}
 
-For each insight, respond in this exact JSON format (array of objects):
-[
-  {
-    "type": "trend" | "anomaly" | "recommendation" | "summary",
-    "title": "Short, clear headline (e.g. 'Sales are growing steadily')",
-    "content": "2-3 sentence explanation in everyday language. Focus on what the finding means for their business, not how you found it. Use examples from the data when possible. Avoid phrases like 'the data shows' or 'based on analysis' — just state the finding directly.",
-    "confidence": 0.0-1.0
-  }
-]
+Respond in this EXACT JSON format:
+{
+  "summary": "3-5 sentence executive summary in plain language. Start with the most important finding. Use concrete numbers. Write like you're telling a friend, not writing a report.",
+  "keyMetrics": [
+    {
+      "title": "Metric name (e.g. 'Total Revenue')",
+      "value": "Formatted value (e.g. '$64,800')",
+      "trend": "up" | "down" | "neutral",
+      "trendValue": "Change description (e.g. '+23% vs prior month')",
+      "description": "One-line explanation"
+    }
+  ],
+  "insights": [
+    {
+      "type": "trend" | "anomaly" | "recommendation" | "summary",
+      "title": "Short headline",
+      "content": "2-3 sentence explanation in everyday language",
+      "confidence": 0.0-1.0
+    }
+  ],
+  "recommendations": [
+    {
+      "title": "Action title (e.g. 'Focus on Electronics')",
+      "description": "What to do and why, in plain language",
+      "priority": "high" | "medium" | "low",
+      "impact": "Expected impact (e.g. 'Could increase revenue by 15-20%')",
+      "action": "Specific next step"
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar" | "line" | "pie",
+      "xColumn": "column name from the data",
+      "yColumn": "numeric column name from the data",
+      "title": "Chart title"
+    }
+  ]
+}
 
 Rules:
-- Write like you're explaining to a friend, not writing a report
-- Use concrete numbers and comparisons (e.g. "Revenue went up 23% from January to March")
-- For recommendations, suggest specific actions they can take
-- Avoid: "column", "row", "dataset", "record", "null", "NaN", technical abbreviations
-- Focus on business impact: money, growth, risk, opportunity
-Respond ONLY with the JSON array, no other text.`;
+- Provide 3-5 keyMetrics, 3-5 insights, 2-4 recommendations, 1-3 charts
+- Use ONLY column names that exist in the data for chart xColumn/yColumn
+- For charts, prefer: bar for categories, line for time series, pie for proportions
+- Write everything in plain language — NO jargon like "column", "row", "dataset", "null"
+- Use concrete numbers and comparisons
+- For keyMetrics, calculate actual values from the sample data when possible
+- Respond ONLY with the JSON object, no other text.`;
 
-    const response = await callAI([{ role: 'user', content: prompt }]);
-    try {
-      const cleaned = response.content.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      return JSON.parse(cleaned);
-    } catch {
-      return [{
-        type: 'summary',
+    const response = await callAI([{ role: 'user', content: prompt }], { maxTokens: 4096 });
+    const parsed = parseAIJSON<AnalysisResult>(response.content);
+
+    if (parsed && parsed.summary && Array.isArray(parsed.insights)) {
+      // Validate chart columns exist
+      parsed.charts = (parsed.charts || []).filter(c =>
+        columns.some(col => col.name === c.xColumn) &&
+        columns.some(col => col.name === c.yColumn)
+      );
+      return parsed;
+    }
+
+    // Fallback: wrap raw response as a simple analysis
+    return {
+      summary: response.content,
+      keyMetrics: [],
+      insights: [{
+        type: 'summary' as const,
         title: 'Analysis Complete',
         content: response.content,
         confidence: 0.8,
-      }];
-    }
+      }],
+      recommendations: [],
+      charts: [],
+    };
   },
 
   /**
@@ -115,7 +210,7 @@ Respond ONLY with the JSON array, no other text.`;
     question: string,
     columns: Array<{ name: string; type: string }>,
     rows: Record<string, unknown>[],
-  ): Promise<ChartSuggestion & { filteredRows?: Record<string, unknown>[] }> {
+  ): Promise<ChartSuggestion> {
     const sample = rows.slice(0, 30);
     const prompt = `You are a data visualization assistant. The user asked a question about their data.
 
@@ -137,18 +232,13 @@ Pick the best chart type and columns for answering the question.
 Respond ONLY with the JSON object.`;
 
     const response = await callAI([{ role: 'user', content: prompt }]);
-    try {
-      const cleaned = response.content.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      return JSON.parse(cleaned);
-    } catch {
-      return {
-        chartType: 'table',
-        xColumn: columns[0]?.name || 'x',
-        yColumn: columns.find((c) => c.type === 'number')?.name || 'y',
-        title: question,
-        reasoning: 'Could not parse AI response, showing data as table.',
-      };
-    }
+    return parseAIJSON<ChartSuggestion>(response.content) ?? {
+      chartType: 'table',
+      xColumn: columns[0]?.name || 'x',
+      yColumn: columns.find((c) => c.type === 'number')?.name || 'y',
+      title: question,
+      reasoning: 'Could not parse AI response, showing data as table.',
+    };
   },
 
   /**
@@ -175,18 +265,13 @@ Respond in JSON:
 Respond ONLY with JSON.`;
 
     const response = await callAI([{ role: 'user', content: prompt }]);
-    try {
-      const cleaned = response.content.trim().replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      return JSON.parse(cleaned);
-    } catch {
-      return {
-        chartType: 'bar',
-        xColumn: columns[0]?.name || 'x',
-        yColumn: columns.find((c) => c.type === 'number')?.name || 'y',
-        title: 'Data Overview',
-        reasoning: 'Default suggestion',
-      };
-    }
+    return parseAIJSON<ChartSuggestion>(response.content) ?? {
+      chartType: 'bar',
+      xColumn: columns[0]?.name || 'x',
+      yColumn: columns.find((c) => c.type === 'number')?.name || 'y',
+      title: 'Data Overview',
+      reasoning: 'Default suggestion',
+    };
   },
 
   /**

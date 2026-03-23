@@ -1,10 +1,17 @@
 import { api } from '../../../lib/api';
 
-// Use local types to avoid conflicts with shared
 interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+export interface KeyMetric {
+  title: string;
+  value: string;
+  trend: 'up' | 'down' | 'neutral';
+  trendValue: string;
+  description: string;
 }
 
 export interface Insight {
@@ -12,6 +19,29 @@ export interface Insight {
   title: string;
   content: string;
   confidence: number;
+}
+
+export interface Recommendation {
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  impact: string;
+  action: string;
+}
+
+export interface AnalysisChart {
+  type: 'bar' | 'line' | 'pie';
+  xColumn: string;
+  yColumn: string;
+  title: string;
+}
+
+export interface AnalysisResult {
+  summary: string;
+  keyMetrics: KeyMetric[];
+  insights: Insight[];
+  recommendations: Recommendation[];
+  charts: AnalysisChart[];
 }
 
 export interface QueryResult {
@@ -40,8 +70,8 @@ export interface ChatMessage {
 }
 
 export const aiApi = {
-  async analyzeFile(fileId: string): Promise<Insight[]> {
-    const res = await api.post<ApiResponse<Insight[]>>(`/ai/analyze/${fileId}`);
+  async analyzeFile(fileId: string): Promise<AnalysisResult> {
+    const res = await api.post<ApiResponse<AnalysisResult>>(`/ai/analyze/${fileId}`);
     return res.data.data!;
   },
 

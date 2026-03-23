@@ -5,11 +5,11 @@ import { FileDropzone } from '../features/analytics/components/FileDropzone';
 import { FileList } from '../features/analytics/components/FileList';
 import { FilePreview } from '../features/analytics/components/FilePreview';
 import { QueryInput } from '../features/ai/components/QueryInput';
-import { InsightsPanel } from '../features/ai/components/InsightsPanel';
+import { AnalysisResults } from '../features/ai/components/AnalysisResults';
 import { AIChat } from '../features/ai/components/AIChat';
 import { useFiles } from '../features/analytics/hooks/useFiles';
 import { useFileUpload } from '../features/analytics/hooks/useFileUpload';
-import { useAnalyzeFile, useInsights, useQueryData } from '../features/ai/hooks/useAI';
+import { useAnalyzeFile, useQueryData } from '../features/ai/hooks/useAI';
 import { Sparkles, Upload as UploadIcon, MessageSquare } from 'lucide-react';
 import type { FileResponse } from '@sme-insightx/shared';
 
@@ -20,7 +20,6 @@ export function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('upload');
   const { data, isLoading } = useFiles();
   const { uploadFiles, uploads, isUploading } = useFileUpload();
-  const { data: allInsights } = useInsights();
   const runAnalysis = useAnalyzeFile();
   const queryData = useQueryData();
 
@@ -118,6 +117,7 @@ export function AnalyticsPage() {
                 onChange={(e) => {
                   const f = files.find((file) => file.id === e.target.value);
                   setSelectedFile(f || null);
+                  runAnalysis.reset();
                 }}
               >
                 <option value="">Select a file to analyze...</option>
@@ -125,7 +125,7 @@ export function AnalyticsPage() {
                   <option key={f.id} value={f.id}>{f.originalName}</option>
                 ))}
               </select>
-              {selectedFile && (
+              {selectedFile && !runAnalysis.data && (
                 <Button size="sm" onClick={handleAnalyze} disabled={runAnalysis.isPending}>
                   <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                   {runAnalysis.isPending ? 'Analyzing...' : 'Analyze'}
@@ -134,14 +134,7 @@ export function AnalyticsPage() {
             </div>
           )}
 
-          {selectedFile && (
-            <QueryInput
-              onQuery={handleQuery}
-              isLoading={queryData.isPending}
-              placeholder="Ask a question about this data..."
-            />
-          )}
-
+          {/* Query result (from natural language question) */}
           {queryData.data && (
             <div className="rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/30 p-4">
               <p className="text-sm font-medium">{(queryData.data as any).title}</p>
@@ -149,17 +142,22 @@ export function AnalyticsPage() {
                 Suggested: <strong>{(queryData.data as any).chartType}</strong> chart with{' '}
                 {(queryData.data as any).xColumn} (x) and {(queryData.data as any).yColumn} (y)
               </p>
-              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                {(queryData.data as any).reasoning}
-              </p>
+              {(queryData.data as any).reasoning && (
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  {(queryData.data as any).reasoning}
+                </p>
+              )}
             </div>
           )}
 
-          <InsightsPanel
-            insights={(runAnalysis.data as any) || (allInsights as any) || []}
+          {/* Full Analysis Results */}
+          <AnalysisResults
+            analysis={runAnalysis.data}
             isLoading={runAnalysis.isPending}
+            fileId={selectedFile?.id || ''}
             onAnalyze={handleAnalyze}
             canAnalyze={!!selectedFile}
+            onAskQuestion={selectedFile ? handleQuery : undefined}
           />
         </div>
       )}
