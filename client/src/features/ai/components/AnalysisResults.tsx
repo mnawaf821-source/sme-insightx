@@ -1,4 +1,4 @@
-import { Brain, FileText, BarChart3, TrendingUp, TrendingDown, Minus, ArrowRight, Lightbulb, AlertTriangle, Sparkles, Send } from 'lucide-react';
+import { Brain, FileText, BarChart3, TrendingUp, TrendingDown, Minus, ArrowRight, Lightbulb, AlertTriangle, Sparkles, Send, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
@@ -6,7 +6,103 @@ import { BarChart } from '../../dashboard/components/charts/BarChart';
 import { LineChart } from '../../dashboard/components/charts/LineChart';
 import { PieChart } from '../../dashboard/components/charts/PieChart';
 import { useChartData } from '../../dashboard/hooks/useDashboard';
+import { useDashboards, useAddWidget } from '../../dashboard/hooks/useDashboard';
 import type { AnalysisResult as AnalysisData, KeyMetric, Insight, Recommendation, AnalysisChart } from '../api/ai.api';
+import type { WidgetConfig } from '../../dashboard/api/dashboard.api';
+
+// ─── Add to Dashboard helper ────────────────────────────────────────────────
+
+function AddToDashboardButton({
+  widgetData,
+}: {
+  widgetData: { type: 'chart' | 'metric'; title: string; config: WidgetConfig };
+}) {
+  const { data: dashboards } = useDashboards();
+  const [selectedDash, setSelectedDash] = useState<string>('');
+  const [showPicker, setShowPicker] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const dashboardList = dashboards ?? [];
+  const addWidget = useAddWidget(selectedDash);
+
+  const handleAdd = () => {
+    if (!selectedDash) return;
+    addWidget.mutate(
+      {
+        type: widgetData.type === 'metric' ? 'metric' : 'chart',
+        title: widgetData.title,
+        config: widgetData.config,
+        position: { x: 0, y: 0, w: widgetData.type === 'metric' ? 3 : 6, h: widgetData.type === 'metric' ? 2 : 4 },
+      },
+      {
+        onSuccess: () => {
+          setAdded(true);
+          setShowPicker(false);
+          setTimeout(() => setAdded(false), 2000);
+        },
+      },
+    );
+  };
+
+  if (added) {
+    return (
+      <span className="flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+        ✓ Added
+      </span>
+    );
+  }
+
+  if (showPicker) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <select
+          className="h-7 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 text-[11px]"
+          value={selectedDash}
+          onChange={(e) => setSelectedDash(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <option value="">Dashboard…</option>
+          {dashboardList.map((d) => (
+            <option key={d.id} value={d.id}>{d.name}</option>
+          ))}
+        </select>
+        <Button
+          size="sm"
+          className="h-7 px-2 text-[11px]"
+          disabled={!selectedDash || addWidget.isPending}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAdd();
+          }}
+        >
+          {addWidget.isPending ? '…' : 'Add'}
+        </Button>
+        <button
+          className="text-[11px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowPicker(false);
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      className="flex items-center gap-1 rounded-md border border-[hsl(var(--border))] px-2 py-1 text-[11px] text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowPicker(true);
+      }}
+    >
+      <Plus className="h-3 w-3" />
+      Add to Dashboard
+    </button>
+  );
+}
 
 // ─── Loading skeleton ───────────────────────────────────────────────────────
 
@@ -20,7 +116,6 @@ const LOADING_STEPS = [
 function AnalyzingLoader() {
   const [activeStep, setActiveStep] = useState(0);
 
-  // Cycle through steps
   useState(() => {
     const interval = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % LOADING_STEPS.length);
@@ -30,21 +125,17 @@ function AnalyzingLoader() {
 
   return (
     <div className="space-y-6">
-      {/* Summary skeleton */}
       <div className="h-28 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
-      {/* Metrics skeleton */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-24 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
         ))}
       </div>
-      {/* Charts skeleton */}
       <div className="grid gap-4 md:grid-cols-2">
         {[1, 2].map((i) => (
           <div key={i} className="h-64 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
         ))}
       </div>
-      {/* Steps */}
       <div className="flex items-center justify-center gap-6 py-4">
         {LOADING_STEPS.map((step, i) => {
           const Icon = step.icon;
@@ -67,14 +158,27 @@ function AnalyzingLoader() {
 
 // ─── Metric Card ────────────────────────────────────────────────────────────
 
-function MetricCard({ metric, index }: { metric: KeyMetric; index: number }) {
+function MetricCard({ metric, index, fileId }: { metric: KeyMetric; index: number; fileId: string }) {
   const TrendIcon = metric.trend === 'up' ? TrendingUp : metric.trend === 'down' ? TrendingDown : Minus;
   const trendColor = metric.trend === 'up' ? 'text-emerald-500' : metric.trend === 'down' ? 'text-red-500' : 'text-[hsl(var(--muted-foreground))]';
 
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-4">
-        <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{metric.title}</p>
+        <div className="flex items-start justify-between">
+          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{metric.title}</p>
+          <AddToDashboardButton
+            widgetData={{
+              type: 'metric',
+              title: metric.title,
+              config: {
+                fileId,
+                metricColumn: '',
+                metricAggregation: 'sum',
+              },
+            }}
+          />
+        </div>
         <p className="mt-1 text-2xl font-bold tracking-tight">{metric.value}</p>
         <div className="mt-2 flex items-center gap-1.5">
           <TrendIcon className={`h-3.5 w-3.5 ${trendColor}`} />
@@ -178,7 +282,21 @@ function ChartCard({ chart, fileId }: { chart: AnalysisChart; fileId: string }) 
   return (
     <Card>
       <CardContent className="p-4">
-        <h3 className="mb-3 text-sm font-semibold">{chart.title}</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold">{chart.title}</h3>
+          <AddToDashboardButton
+            widgetData={{
+              type: 'chart',
+              title: chart.title,
+              config: {
+                fileId,
+                chartType: chart.type,
+                xColumn: chart.xColumn,
+                yColumn: chart.yColumn,
+              },
+            }}
+          />
+        </div>
         <div className="h-56">
           {chart.type === 'line' ? (
             <LineChart data={data.rows} xKey={chart.xColumn} yKey={chart.yColumn} />
@@ -214,7 +332,6 @@ function FollowUpSuggestions({ onAsk }: { onAsk: (q: string) => void }) {
         </div>
         <p className="mb-4 text-xs text-[hsl(var(--muted-foreground))]">Get deeper insights about your data</p>
 
-        {/* Suggested questions */}
         <div className="mb-4 flex flex-wrap gap-2">
           {FOLLOW_UP_QUESTIONS.map((q, i) => (
             <button
@@ -227,7 +344,6 @@ function FollowUpSuggestions({ onAsk }: { onAsk: (q: string) => void }) {
           ))}
         </div>
 
-        {/* Custom question */}
         <div className="flex gap-2">
           <input
             type="text"
@@ -278,12 +394,10 @@ export function AnalysisResults({
   canAnalyze,
   onAskQuestion,
 }: AnalysisResultsProps) {
-  // Loading state
   if (isLoading) {
     return <AnalyzingLoader />;
   }
 
-  // Empty state
   if (!analysis) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -308,7 +422,6 @@ export function AnalysisResults({
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Re-analyze button */}
       {canAnalyze && onAnalyze && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={onAnalyze}>
@@ -340,7 +453,7 @@ export function AnalysisResults({
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {keyMetrics.map((metric, i) => (
-              <MetricCard key={i} metric={metric} index={i} />
+              <MetricCard key={i} metric={metric} index={i} fileId={fileId} />
             ))}
           </div>
         </section>
