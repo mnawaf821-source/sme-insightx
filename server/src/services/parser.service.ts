@@ -74,9 +74,8 @@ function parseCSV(buffer: Buffer): ParsedResult {
 /**
  * Parse Excel buffer
  */
-function parseExcel(buffer: Buffer): ParsedResult {
-  // Dynamic import to avoid issues if xlsx has ESM problems
-  const XLSX = require('xlsx');
+async function parseExcel(buffer: Buffer): Promise<ParsedResult> {
+  const XLSX = await import('xlsx');
   const workbook = XLSX.read(buffer, { type: 'buffer' });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
@@ -139,17 +138,21 @@ function parseJSON(buffer: Buffer): ParsedResult {
  * Parse PDF buffer (extract text)
  */
 async function parsePDF(buffer: Buffer): Promise<ParsedResult> {
-  const pdfParse = require('pdf-parse');
-  const result = await pdfParse(buffer);
+  try {
+    const pdfParse = (await import('pdf-parse')).default;
+    const result = await pdfParse(buffer);
 
-  return {
-    headers: ['content'],
-    rows: [{ content: result.text }],
-    metadata: {
-      rowCount: 1,
-      columnTypes: { content: 'string' },
-    },
-  };
+    return {
+      headers: ['content'],
+      rows: [{ content: result.text }],
+      metadata: {
+        rowCount: 1,
+        columnTypes: { content: 'string' },
+      },
+    };
+  } catch (err: any) {
+    throw new Error(`Could not parse PDF: ${err.message || 'The file may be corrupted or password-protected'}`);
+  }
 }
 
 /**

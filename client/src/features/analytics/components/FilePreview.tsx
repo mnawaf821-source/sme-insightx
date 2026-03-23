@@ -152,6 +152,7 @@ export function FilePreview({ file, onClose }: FilePreviewProps) {
   const parseFile = useParseFile();
   const [isParsing, setIsParsing] = useState(false);
   const [hasAutoParsed, setHasAutoParsed] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   // Auto-trigger parse when no parsed data exists (avoids confusing 404 error)
   const shouldAutoParse =
@@ -159,14 +160,21 @@ export function FilePreview({ file, onClose }: FilePreviewProps) {
 
   if (shouldAutoParse) {
     setHasAutoParsed(true);
-    parseFile.mutate(file.id);
+    parseFile.mutate(file.id, {
+      onError: (err: any) => {
+        setParseError(err?.response?.data?.error || err?.message || 'Failed to parse file');
+      },
+    });
   }
 
   const handleParse = async () => {
     setIsParsing(true);
     setHasAutoParsed(true);
+    setParseError(null);
     try {
       await parseFile.mutateAsync(file.id);
+    } catch (err: any) {
+      setParseError(err?.response?.data?.error || err?.message || 'Failed to parse file');
     } finally {
       setIsParsing(false);
     }
@@ -224,10 +232,10 @@ export function FilePreview({ file, onClose }: FilePreviewProps) {
                 />
               ))}
             </div>
-          ) : error && !parseFile.isPending ? (
+          ) : (error || parseError) && !parseFile.isPending ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                Could not load parsed data
+              <p className="text-sm text-red-500">
+                {parseError || 'Could not load parsed data'}
               </p>
               <Button
                 variant="outline"

@@ -105,10 +105,7 @@ function ColumnSelect({
         <option value="">{placeholder || `Select ${label.toLowerCase()}...`}</option>
         {filtered.map((col) => (
           <option key={col.name} value={col.name}>
-            {col.name}
-            <span className="text-[hsl(var(--muted-foreground))]">
-              {' '}({col.type})
-            </span>
+            {col.name} ({col.type})
           </option>
         ))}
       </select>
