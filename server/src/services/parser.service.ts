@@ -112,23 +112,36 @@ async function parseExcel(buffer: Buffer): Promise<ParsedResult> {
 function parseJSON(buffer: Buffer): ParsedResult {
   const data = JSON.parse(buffer.toString('utf-8'));
 
-  if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('JSON file must contain an array of objects');
+  // Accept flat arrays directly
+  let rows: Record<string, unknown>[] = [];
+
+  if (Array.isArray(data)) {
+    rows = data;
+  } else if (typeof data === 'object' && data !== null) {
+    // Object wrapper like { "employees": [...] } — find first array property
+    const arrayKey = Object.keys(data).find((k) => Array.isArray(data[k]));
+    if (arrayKey) {
+      rows = data[arrayKey];
+    }
   }
 
-  const headers = Object.keys(data[0]);
+  if (rows.length === 0) {
+    throw new Error('JSON file must contain an array of objects, or an object with an array property');
+  }
+
+  const headers = Object.keys(rows[0]);
   const columnTypes: Record<string, string> = {};
 
   for (const header of headers) {
-    const values = data.map((r: Record<string, unknown>) => r[header]);
+    const values = rows.map((r: Record<string, unknown>) => r[header]);
     columnTypes[header] = inferColumnType(values);
   }
 
   return {
     headers,
-    rows: data,
+    rows,
     metadata: {
-      rowCount: data.length,
+      rowCount: rows.length,
       columnTypes,
     },
   };

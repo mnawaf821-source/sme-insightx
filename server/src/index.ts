@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import multipart from '@fastify/multipart';
 import { env } from './config.js';
 import { errorHandler } from './middleware/error.js';
 import { authRoutes } from './routes/auth.routes.js';
@@ -26,6 +27,12 @@ await app.register(cors, {
 
 await app.register(helmet, {
   contentSecurityPolicy: false,
+});
+
+await app.register(multipart, {
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
 });
 
 // ─── Error Handler ──────────────────────────────────────────────────────────

@@ -24,12 +24,18 @@ export const fileService = {
   async createFile(
     organizationId: string,
     userId: string,
-    file: Express.Multer.File,
+    file: { filename: string; originalname: string; mimetype: string; size: number; path: string },
   ): Promise<FileRecord> {
-    const fileType = file.mimetype === 'text/csv' ? 'csv'
-      : file.mimetype === 'application/json' ? 'json'
-      : file.mimetype === 'application/pdf' ? 'pdf'
-      : 'xlsx';
+    const ext = file.originalname.split('.').pop()?.toLowerCase() || '';
+    const extMap: Record<string, string> = { csv: 'csv', json: 'json', pdf: 'pdf', xlsx: 'xlsx', xls: 'xlsx' };
+    const mimeMap: Record<string, string> = {
+      'text/csv': 'csv',
+      'application/json': 'json',
+      'application/pdf': 'pdf',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+      'application/vnd.ms-excel': 'xlsx',
+    };
+    const fileType = mimeMap[file.mimetype] || extMap[ext] || 'unknown';
 
     const [record] = await db
       .insert(files)

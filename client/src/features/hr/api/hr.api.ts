@@ -66,6 +66,20 @@ export interface PipelineAnalytics {
   conversionRate: string;
 }
 
+export interface TopCandidate {
+  id: string;
+  name: string;
+  email: string;
+  score: number;
+  breakdown: {
+    skills: number;
+    experience: number;
+    education: number;
+  };
+  status: string;
+  reasoning: string;
+}
+
 export const hrApi = {
   // Jobs
   async getJobs(): Promise<JobPosting[]> {
@@ -140,8 +154,25 @@ export const hrApi = {
   },
 
   // AI Match
-  async matchCandidate(id: string): Promise<{ score: number; reasoning: string }> {
-    const res = await api.post<ApiResponse<{ score: number; reasoning: string }>>(
+  async matchCandidate(id: string): Promise<{ score: number; reasoning: string; breakdown: { skills: number; experience: number; education: number } }> {
+    const res = await api.post<ApiResponse<{ score: number; reasoning: string; breakdown: { skills: number; experience: number; education: number } }>>(
+      `/hr/candidates/${id}/match`,
+    );
+    return res.data.data!;
+  },
+
+  // Top Candidates
+  async getTopCandidates(jobId?: string): Promise<TopCandidate[]> {
+    const res = await api.get<ApiResponse<TopCandidate[]>>(
+      '/hr/top-candidates',
+      { params: jobId ? { jobId } : undefined },
+    );
+    return res.data.data!;
+  },
+
+  // Re-score candidate
+  async rescoreCandidate(id: string): Promise<{ score: number; reasoning: string; breakdown: { skills: number; experience: number; education: number } }> {
+    const res = await api.post<ApiResponse<{ score: number; reasoning: string; breakdown: { skills: number; experience: number; education: number } }>>(
       `/hr/candidates/${id}/match`,
     );
     return res.data.data!;
