@@ -193,7 +193,12 @@ export function HRPage() {
       {/* Resume Upload Section */}
       {showResumeUpload && (
         <div className="mb-6">
-          <ResumeUpload />
+          <ResumeUpload
+            jobId={selectedJobId}
+            onComplete={() => {
+              // Pipeline will refresh via React Query invalidation
+            }}
+          />
         </div>
       )}
 

@@ -204,7 +204,10 @@
     "advance_stage": "Advance",
     "view_resume": "View Resume",
     "rescore": "Re-score",
-    "upload_resumes": "Upload Resumes"
+    "upload_resumes": "Upload Resumes",
+    "select_job_first": "Please select a job posting first",
+    "creating_candidate": "Creating candidate...",
+    "candidate_created": "Candidate added successfully"
   },
   "settings": {
     "title": "Settings",

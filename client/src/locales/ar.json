@@ -204,7 +204,10 @@
     "advance_stage": "تقدم",
     "view_resume": "عرض السيرة الذاتية",
     "rescore": "إعادة التقييم",
-    "upload_resumes": "تحميل السير الذاتية"
+    "upload_resumes": "تحميل السير الذاتية",
+    "select_job_first": "يرجى اختيار وظيفة أولاً",
+    "creating_candidate": "جاري إضافة المرشح...",
+    "candidate_created": "تمت إضافة المرشح بنجاح"
   },
   "settings": {
     "title": "الإعدادات",
