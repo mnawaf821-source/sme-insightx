@@ -64,10 +64,10 @@ function FileTypeIcon({ type }: { type: string }) {
 
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
-    csv: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    xlsx: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    json: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    pdf: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    csv: 'bg-black text-green-400 dark:bg-zinc-800 dark:text-green-400',
+    xlsx: 'bg-black text-green-400 dark:bg-zinc-800 dark:text-green-400',
+    json: 'bg-black text-amber-400 dark:bg-zinc-800 dark:text-amber-400',
+    pdf: 'bg-black text-red-400 dark:bg-zinc-800 dark:text-red-400',
   };
 
   return (

@@ -1,4 +1,5 @@
 import { api } from '../../../lib/api';
+import { useAuthStore } from '../../../stores/authStore';
 import type {
   FileResponse,
   ParsedDataResponse,
@@ -22,7 +23,7 @@ export const analyticsApi = {
       xhr.open('POST', '/api/files/upload');
 
       // Attach auth token
-      const token = localStorage.getItem('sme_insightx_token');
+      const token = useAuthStore.getState().token;
       if (token) {
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }

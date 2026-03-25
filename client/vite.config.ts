@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
-    allowedHosts: ['situation-department-infections-isa.trycloudflare.com', '.trycloudflare.com'],
+    allowedHosts: ['stock-distributor-officials-puerto.trycloudflare.com', '.trycloudflare.com'],
     proxy: {
       '/api': {
         target: 'http://localhost:3002',

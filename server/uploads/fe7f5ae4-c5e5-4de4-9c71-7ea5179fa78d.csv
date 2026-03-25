@@ -1,0 +1,13 @@
+id,product,category,quantity,price,date,revenue
+1,Widget A,Electronics,150,29.99,2024-01-15,4498.50
+2,Widget B,Electronics,200,49.99,2024-01-20,9998.00
+3,Gadget X,Home,85,15.50,2024-02-01,1317.50
+4,Widget C,Electronics,300,24.99,2024-02-10,7497.00
+5,Gadget Y,Home,120,35.00,2024-02-15,4200.00
+6,Tool A,Tools,45,89.99,2024-03-01,4049.55
+7,Widget D,Electronics,180,19.99,2024-03-05,3598.20
+8,Gadget Z,Home,95,55.00,2024-03-10,5225.00
+9,Tool B,Tools,60,120.00,2024-03-15,7200.00
+10,Widget E,Electronics,250,34.99,2024-03-20,8747.50
+11,Tool C,Tools,30,199.99,2024-03-25,5999.70
+12,Gadget W,Home,110,22.50,2024-04-01,2475.00

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, FileText, X, CheckCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
@@ -21,6 +21,7 @@ export function ResumeUpload({ onUpload }: ResumeUploadProps) {
   const { t } = useTranslation();
   const [dragOver, setDragOver] = useState(false);
   const [uploads, setUploads] = useState<UploadFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const simulateUpload = useCallback((file: File) => {
     const id = Date.now().toString() + Math.random().toString(36).slice(2);
@@ -99,18 +100,22 @@ export function ResumeUpload({ onUpload }: ResumeUploadProps) {
           <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
             {t('hr.supported_resume_formats')}
           </p>
-          <label className="mt-4">
-            <input
-              type="file"
-              className="hidden"
-              multiple
-              accept=".pdf,.doc,.docx"
-              onChange={handleFileSelect}
-            />
-            <Button variant="outline" size="sm" asChild>
-              <span>{t('analytics.upload_files')}</span>
-            </Button>
-          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            multiple
+            accept=".pdf,.doc,.docx"
+            onChange={handleFileSelect}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {t('analytics.upload_files')}
+          </Button>
         </div>
 
         {/* Upload List */}

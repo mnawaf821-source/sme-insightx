@@ -127,7 +127,7 @@
     "all_jobs": "جميع الوظائف",
     "new_job": "وظيفة جديدة",
     "add_candidate": "إضافة مرشح",
-    "job_postings": "الوظائف المنشورة ({{count}})",
+    "job_postings": "الوظائف المنشورة",
     "delete_job": "حذف",
     "confirm_delete_job": "حذف \"{{title}}\"؟",
     "recruitment_pipeline": "خط أنابيب التوظيف",

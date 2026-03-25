@@ -127,7 +127,7 @@
     "all_jobs": "All Jobs",
     "new_job": "New Job",
     "add_candidate": "Add Candidate",
-    "job_postings": "Job Postings ({{count}})",
+    "job_postings": "Job Postings",
     "delete_job": "Delete",
     "confirm_delete_job": "Delete \"{{title}}\"?",
     "recruitment_pipeline": "Recruitment Pipeline",

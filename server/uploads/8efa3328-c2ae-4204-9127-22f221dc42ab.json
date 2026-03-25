@@ -1,0 +1,304 @@
+{
+  "employees": [
+    {
+      "id": 1,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 4841
+    },
+    {
+      "id": 2,
+      "name": "Ali",
+      "department": "Sales",
+      "salary": 9455
+    },
+    {
+      "id": 3,
+      "name": "Omar",
+      "department": "IT",
+      "salary": 9708
+    },
+    {
+      "id": 4,
+      "name": "Laila",
+      "department": "Sales",
+      "salary": 11888
+    },
+    {
+      "id": 5,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 6889
+    },
+    {
+      "id": 6,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 8332
+    },
+    {
+      "id": 7,
+      "name": "Ali",
+      "department": "IT",
+      "salary": 9675
+    },
+    {
+      "id": 8,
+      "name": "Omar",
+      "department": "IT",
+      "salary": 11160
+    },
+    {
+      "id": 9,
+      "name": "Ali",
+      "department": "IT",
+      "salary": 9322
+    },
+    {
+      "id": 10,
+      "name": "Sara",
+      "department": "HR",
+      "salary": 10940
+    },
+    {
+      "id": 11,
+      "name": "Laila",
+      "department": "Sales",
+      "salary": 5319
+    },
+    {
+      "id": 12,
+      "name": "Ali",
+      "department": "IT",
+      "salary": 10868
+    },
+    {
+      "id": 13,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 4980
+    },
+    {
+      "id": 14,
+      "name": "Laila",
+      "department": "Finance",
+      "salary": 6215
+    },
+    {
+      "id": 15,
+      "name": "Sara",
+      "department": "Sales",
+      "salary": 6191
+    },
+    {
+      "id": 16,
+      "name": "Omar",
+      "department": "Finance",
+      "salary": 10438
+    },
+    {
+      "id": 17,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 5946
+    },
+    {
+      "id": 18,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 11858
+    },
+    {
+      "id": 19,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 9469
+    },
+    {
+      "id": 20,
+      "name": "Sara",
+      "department": "IT",
+      "salary": 6679
+    },
+    {
+      "id": 21,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 5110
+    },
+    {
+      "id": 22,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 8059
+    },
+    {
+      "id": 23,
+      "name": "Sara",
+      "department": "HR",
+      "salary": 7855
+    },
+    {
+      "id": 24,
+      "name": "Sara",
+      "department": "Sales",
+      "salary": 4621
+    },
+    {
+      "id": 25,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 4492
+    },
+    {
+      "id": 26,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 10521
+    },
+    {
+      "id": 27,
+      "name": "Laila",
+      "department": "HR",
+      "salary": 8348
+    },
+    {
+      "id": 28,
+      "name": "Omar",
+      "department": "IT",
+      "salary": 5988
+    },
+    {
+      "id": 29,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 10271
+    },
+    {
+      "id": 30,
+      "name": "Omar",
+      "department": "HR",
+      "salary": 4627
+    },
+    {
+      "id": 31,
+      "name": "Laila",
+      "department": "Sales",
+      "salary": 8122
+    },
+    {
+      "id": 32,
+      "name": "Laila",
+      "department": "IT",
+      "salary": 5453
+    },
+    {
+      "id": 33,
+      "name": "Sara",
+      "department": "HR",
+      "salary": 9334
+    },
+    {
+      "id": 34,
+      "name": "Sara",
+      "department": "Finance",
+      "salary": 11459
+    },
+    {
+      "id": 35,
+      "name": "Ali",
+      "department": "IT",
+      "salary": 7492
+    },
+    {
+      "id": 36,
+      "name": "Sara",
+      "department": "IT",
+      "salary": 5640
+    },
+    {
+      "id": 37,
+      "name": "Ali",
+      "department": "IT",
+      "salary": 9651
+    },
+    {
+      "id": 38,
+      "name": "Ali",
+      "department": "Sales",
+      "salary": 10625
+    },
+    {
+      "id": 39,
+      "name": "Omar",
+      "department": "Sales",
+      "salary": 4627
+    },
+    {
+      "id": 40,
+      "name": "Laila",
+      "department": "Finance",
+      "salary": 4379
+    },
+    {
+      "id": 41,
+      "name": "Ali",
+      "department": "IT",
+      "salary": 8551
+    },
+    {
+      "id": 42,
+      "name": "Ali",
+      "department": "HR",
+      "salary": 8969
+    },
+    {
+      "id": 43,
+      "name": "Ali",
+      "department": "Finance",
+      "salary": 8298
+    },
+    {
+      "id": 44,
+      "name": "Laila",
+      "department": "IT",
+      "salary": 8492
+    },
+    {
+      "id": 45,
+      "name": "Omar",
+      "department": "HR",
+      "salary": 5916
+    },
+    {
+      "id": 46,
+      "name": "Ali",
+      "department": "Sales",
+      "salary": 5234
+    },
+    {
+      "id": 47,
+      "name": "Omar",
+      "department": "Finance",
+      "salary": 6082
+    },
+    {
+      "id": 48,
+      "name": "Laila",
+      "department": "IT",
+      "salary": 10223
+    },
+    {
+      "id": 49,
+      "name": "Sara",
+      "department": "Sales",
+      "salary": 6859
+    },
+    {
+      "id": 50,
+      "name": "Omar",
+      "department": "Finance",
+      "salary": 7260
+    }
+  ]
+}

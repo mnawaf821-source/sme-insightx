@@ -58,8 +58,14 @@ export function useFileUpload() {
         throw err;
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.FILES });
+      // Auto-parse the uploaded file
+      if (result?.id) {
+        analyticsApi.triggerParse(result.id).catch(() => {
+          // Parse failure is non-critical
+        });
+      }
     },
   });
 
